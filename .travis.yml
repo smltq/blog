@@ -14,8 +14,8 @@ script:
 after_script:
   - cd ./public
   - git init
-  - git config user.name "your-git-name"
-  - git config user.email "your-email-address"
+  - git config user.name "tqlin"
+  - git config user.email "smltq@126.com"
   - git add .
   - git commit -m "Update blog content by Travis CI"
   - git push origin master
