@@ -6,6 +6,7 @@ cache:
     - node_modules
 
 install:
+  - npm install
   - npm install hexo-deployer-git --save
 
 script:
