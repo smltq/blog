@@ -5,24 +5,16 @@ cache:
   directories:
     - node_modules # 缓存不经常更改的内容
 before_install:
+  - export TZ='Asia/Shanghai' # 更改时区
   - npm install hexo-cli -g
+  - chmod +x ./publish-to-gh-pages.sh  # 为shell文件添加可执行权限
 install:
   - npm install # 安装hexo及插件
 script:
   - hexo clean  # 清除
   - hexo g      # 生成
 after_script:
-  - git clone https://${GH_REF} .deploy_git
-  - cd .deploy_git
-  - git checkout master:gh-pages
-  - cd ../
-  - mv .deploy_git/.git/ ./public/
-  - cd ./public
-  - git config user.name "tqlin"
-  - git config user.email "smltq@126.com"
-  - git add .
-  - git commit -m "Travis CI Auto Builder"
-  - git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:gh-pages && curl http://49.235.170.100:8787/pull
+  - ./publish-to-gh-pages.sh
   - curl http://49.235.170.100:8787/pull
 branches:
   only:
