@@ -96,6 +96,6 @@ theme: landscape
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: 'git'
-  repo: 'https://github.com/smltq/blog.git'
+  repo: 'https://${GH_TOKEN}@github.com/smltq/blog.git'
   branch: 'gh-pages' #published
   message: '部署提交'
