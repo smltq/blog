@@ -9,7 +9,7 @@ description: 'Software Engineer'
 keywords: 'java,spring boot,spring cloud,leetcode,云天,yuntian,tqlin'
 author: yuntian
 language: zh-CN
-timezone: ''
+timezone: 'Asia/Shanghai'
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
@@ -61,6 +61,10 @@ index_generator:
 # Category & Tag
 default_category: uncategorized
 category_map:
+  Java: java
+  数据库: db
+  算法: leetcode
+  其它: other
 tag_map:
 
 # Metadata elements
