@@ -13,9 +13,9 @@ date: 2019-11-21 17:46:56
 
 - 如果你发现有趣的题目，欢迎分享出来，push到个目录[LeetCode 题解目录](https://github.com/smltq/spring-boot-demo/tree/master/leetcode)，或者给我[提issue](https://github.com/smltq/spring-boot-demo/issues)
 
-- 在开发过程中，各种各样有趣的问题，欢迎push到这目录[Java开发问题收集](https://github.com/smltq/spring-boot-demo/tree/master/java-gather)，当然你也可以给我[提issue](https://github.com/smltq/spring-boot-demo/issues)
+- 在开发过程中，各种各样有趣的问题，欢迎push到这目录[开发问题收集](https://github.com/smltq/blog/tree/master/source/_posts/javaGather)，当然你也可以给我[提issue](https://github.com/smltq/blog/issues)
 
-- 需要什么Spring Boot、Spring Cloud示例，你也可以[给我提issue](https://github.com/smltq/spring-boot-demo/issues)
+- 需要哪些Spring Boot、Spring Cloud示例，你也可以[给我提issue](https://github.com/smltq/spring-boot-demo/issues)
 
 ## 开源项目
 
