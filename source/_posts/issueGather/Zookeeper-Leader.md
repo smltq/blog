@@ -105,5 +105,5 @@ Observer 跟 Follower的区别：
 
 ## 资料
 
-- [Java问题收集](https://github.com/smltq/spring-boot-demo/tree/master/java-gather)
+- [Java问题收集](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/index.md)
 - [ZooKeeper 技术内幕：Leader 选举](http://ningg.top/zookeeper-lesson-2-leader-election/)

@@ -143,5 +143,5 @@ mysql> commit;
 
 ## 资料
 
-- [Java问题收集](https://github.com/smltq/spring-boot-demo/tree/master/java-gather)
+- [Java问题收集](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/index.md)
 - [mysql官方文档](https://dev.mysql.com/doc/refman/8.0/en/innodb-transaction-isolation-levels.html)

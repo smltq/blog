@@ -15,5 +15,5 @@ leetcode|[力扣题解目录](https://github.com/smltq/blog/blob/master/source/_
 
 ## 资料
 
-[travis-ci官网](https://travis-ci.org/)
-[使用Travis CI自动部署Hexo博客](https://www.itfanr.cc/2017/08/09/using-travis-ci-automatic-deploy-hexo-blogs/)
+- [travis-ci官网](https://travis-ci.org/)
+- [使用Travis CI自动部署Hexo博客](https://www.itfanr.cc/2017/08/09/using-travis-ci-automatic-deploy-hexo-blogs/)

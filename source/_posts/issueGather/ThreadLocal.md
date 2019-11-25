@@ -624,5 +624,5 @@ setInitialValue在Map不存在的时候调用
 
 ## 资料
 
-- [Java问题收集](https://github.com/smltq/spring-boot-demo/tree/master/java-gather)
+- [Java问题收集](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/index.md)
 - [ThreadLocal和ThreadLocalMap源码分析](https://juejin.im/post/5c99c7c8f265da60e65ba56d#heading-14)
