@@ -205,15 +205,18 @@ social_icons:
 # Blog rolls
 links_settings:
   icon: link
-  title: 我的开源项目
+  title: 云天的开源项目
   # Available values: block | inline
   layout: block
 
 links:
   Spring Boot、Cloud 示例: https://github.com/smltq/spring-boot-demo
+
   JavaScript 工具库、函数库: https://github.com/smltq/jPublic
+
   LeetCode题解收集目录: https://github.com/smltq/spring-boot-demo/tree/master/leetcode
-  Java开发问题收集目录: https://github.com/smltq/spring-boot-demo/tree/master/java-gather
+
+  问题收集目录: https://github.com/smltq/blog/blob/master/source/_posts/issueGather/index.md
 
 # Table of Contents in the Sidebar
 toc:
