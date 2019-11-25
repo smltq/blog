@@ -620,7 +620,7 @@ disqusjs:
   # api: https://disqus.skk.moe/disqus/
   api:
   apikey: NvdxMqgkfYnG2X7PMvyuu9ynhjTQKZ3GE7nwVh9XxaTujUmbsFcShaGqdPEqPJTx# Register new application from https://disqus.com/api/applications/
-  shortname: smltq # See: https://disqus.com/admin/settings/general/
+  shortname: https://tqlin.cn/ # See: https://disqus.com/admin/settings/general/
 
 # Changyan
 changyan:
