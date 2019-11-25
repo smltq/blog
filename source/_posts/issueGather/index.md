@@ -2,7 +2,7 @@
 title: 问题收集
 date: 2019-11-25 00:12:57
 categories: 
-- java
+- Java
 tags:
 - 设计
 - 原理
