@@ -36,10 +36,10 @@ tags:
 
 ## 常用命令目录
 
-- [Linux常用命令](https://github.com/smltq/blog/tree/master/source/_posts/issueGather/LINUX.md)
-- [Java常用命令](https://github.com/smltq/blog/tree/master/source/_posts/issueGather/JAVA.md)
-- [Git常用命令](https://github.com/smltq/blog/tree/master/source/_posts/issueGather/GIT.md)
-- [Git常用命令](https://github.com/smltq/blog/tree/master/source/_posts/issueGather/Nginx.md)
+- [Linux命令](https://github.com/smltq/blog/tree/master/source/_posts/issueGather/LINUX.md)
+- [Java命令](https://github.com/smltq/blog/tree/master/source/_posts/issueGather/JAVA.md)
+- [Git命令](https://github.com/smltq/blog/tree/master/source/_posts/issueGather/GIT.md)
+- [Nginx命令](https://github.com/smltq/blog/tree/master/source/_posts/issueGather/Nginx.md)
 
 ## Docker相关
   
