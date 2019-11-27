@@ -11,9 +11,9 @@ date: 2019-11-21 17:46:56
 
 最喜欢读的一本书是《平凡的世界》，平凡是你的宿命，不要见怪，也不要见外。
 
-- 如果你发现有趣的题目，欢迎分享出来，push到个目录[LeetCode 题解目录](https://github.com/smltq/spring-boot-demo/tree/master/leetcode)，或者给我[提issue](https://github.com/smltq/spring-boot-demo/issues)
+- 如果你发现有趣的题目，欢迎分享出来，push到个[LeetCode 题解目录](https://github.com/smltq/spring-boot-demo/tree/master/leetcode)，或者给我[提issue](https://github.com/smltq/spring-boot-demo/issues)
 
-- 在开发过程中，各种各样有趣的问题，欢迎push到这目录[开发问题收集](https://github.com/smltq/blog/tree/master/source/_posts/javaGather)，当然你也可以给我[提issue](https://github.com/smltq/blog/issues)
+- 在开发过程中，各种各样有趣的问题，欢迎push到这个目录[开发问题收集](https://github.com/smltq/blog/tree/master/source/_posts/javaGather)，当然你也可以给我[提issue](https://github.com/smltq/blog/issues)
 
 - 需要哪些Spring Boot、Spring Cloud示例，你也可以[给我提issue](https://github.com/smltq/spring-boot-demo/issues)
 
