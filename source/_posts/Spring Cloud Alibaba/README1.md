@@ -1,7 +1,7 @@
 ---
 layout: spring
 title: Spring Cloud Alibaba（一） 如何使用nacos服务注册和发现
-date: 2019-11-27 0:29:44
+date: 2019-11-27 0:20:44
 categories: 
 - Java
 tags: 
