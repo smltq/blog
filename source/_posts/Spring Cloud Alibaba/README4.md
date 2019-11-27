@@ -8,8 +8,6 @@ tags:
 - Spring Cloud
 ---
 
-# Spring Cloud Alibaba（四）实现Dubbo服务消费
-
 本项目演示如何使用 Spring Cloud Alibaba 完成 Dubbo 的RPC调用。
 
 ## Spring Cloud与Dubbo

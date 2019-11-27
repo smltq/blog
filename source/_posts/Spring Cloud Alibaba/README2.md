@@ -8,8 +8,6 @@ tags:
 - Spring Cloud
 ---
 
-# Spring Cloud Alibaba（二） 配置中心多项目、多配置文件、分目录实现
-
 ## 介绍
 
 之前[Spring Cloud Config基础篇](https://github.com/smltq/spring-boot-demo/tree/master/cloud-config)这篇文章介绍了Spring Cloud Config 配置中心基础的实现，今天继续聊下Spring Cloud Config 并结合nacos做服务注册中心，实现多项目、多配置文件、按项目目录划分等功能的配置服务中心。
