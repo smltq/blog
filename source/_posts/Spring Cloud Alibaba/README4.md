@@ -6,6 +6,7 @@ categories:
 - Java
 tags: 
 - Spring Cloud
+- Spring Cloud Alibaba
 ---
 
 本项目演示如何使用 Spring Cloud Alibaba 完成 Dubbo 的RPC调用。

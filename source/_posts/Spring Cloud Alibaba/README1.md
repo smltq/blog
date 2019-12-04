@@ -6,6 +6,7 @@ categories:
 - Java
 tags: 
 - Spring Cloud
+- Spring Cloud Alibaba
 ---
 
 ## Nacos介绍

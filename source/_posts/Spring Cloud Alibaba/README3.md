@@ -6,6 +6,7 @@ categories:
 - Java
 tags: 
 - Spring Cloud
+- Spring Cloud Alibaba
 ---
 
 本项目演示如何使用 Sentinel 完成 Spring Cloud 应用的熔断降级调用。
