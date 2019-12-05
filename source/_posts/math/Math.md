@@ -1,9 +1,8 @@
 ---
+layout: false
 markdown:
 export_on_save:
  html: true
-
-layout: false
 ---
 # 数学公式
 
