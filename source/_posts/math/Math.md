@@ -8,7 +8,7 @@ tags:
 - 数学
 ---
 
-## 数学公式
+## 解析几何
 
 ### 点到点距离
 
@@ -28,20 +28,25 @@ tags:
 
 则 $d=\cfrac{|c_1-c_2|}{\sqrt{A^2+B^2}}$
 
-### 立体几何
+## 立体几何
 
-#### 球体表面积
+### 球体表面积
 
-设球体表面积为：$S$。
+球体半径为 $r$，球体表面积为：$S$。
 
 则 $S=4\pi r^2$
 
-#### 球体体积
+### 球体体积
+
+球体半径为 $r$，体积为：$V$
+
+则 $V=\cfrac{4}{3}\pi r^2$
 
 ## 示例
 
 $\sqrt{xy}+\sqrt[a]{x}$
 
 ## 资料
+
 - [数学公式语法](https://katex.org/docs/supported.html)
 - [hexo-renderer-kramed插件](https://github.com/sun11/hexo-renderer-kramed)
