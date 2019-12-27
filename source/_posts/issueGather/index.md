@@ -27,7 +27,7 @@ tags:
 - [Centos7部署mysql](https://github.com/smltq/blog/tree/master/source/_posts/issueGather/Centos7%E9%83%A8%E7%BD%B2mysql.md)
 - [排它锁之行锁、间隙锁、后码锁](https://github.com/smltq/blog/tree/master/source/_posts/issueGather/MySql%E9%94%81.md)
 - [表索引设计原则](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/%E8%A1%A8%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99.md)
-- mysql有几个常用模块(整理中...)
+- [mysql组成模块](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/MySQL%E7%BB%84%E6%88%90%E6%A8%A1%E5%9D%97.md)
 - mysql索引了解，常用索引，B树，B+树
 - mysql组合索引详解，注意事项
 
