@@ -84,8 +84,7 @@ MySQL存储引擎在MySQL中扮演重要角色，其作比较重要作用，大�
 
 物理文件包括：redolog、undolog、binlog（复制时还有relaylog）、errorlog、querylog、slowlog、data、index
 
-## MySQL存储引擎
-
 ## 资料
 
 - [Java问题收集](https://github.com/smltq/spring-boot-demo/tree/master/java-gather)
+- [原文地址](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/MySQL%E7%BB%84%E6%88%90%E6%A8%A1%E5%9D%97.md)
