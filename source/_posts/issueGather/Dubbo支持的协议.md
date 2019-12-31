@@ -128,3 +128,8 @@ RMI协议采用JDK标准的java.rmi.*实现，采用阻塞式短连接和JDK标�
 Thrift是一个轻量级、跨语言的远程服务调用框架，最初由Facebook开发，后面进入Apache开源项目。它通过自身的IDL中间语言, 并借助代码生成引擎生成各种主流语言的RPC服务端/客户端模板代码。
 
 当前 dubbo 支持的 thrift 协议是对 thrift 原生协议的扩展，在原生协议的基础上添加了一些额外的头信息，比如service name，magic number等。
+
+## 资料
+
+- [Java问题收集](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/index.md)
+- [原文地址](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/Dubbo%E6%94%AF%E6%8C%81%E7%9A%84%E5%8D%8F%E8%AE%AE.md)
