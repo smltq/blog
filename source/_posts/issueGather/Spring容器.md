@@ -7,6 +7,10 @@ tags:
 - Spring
 ---
 
+## Spring容器是什么？
+
+Spring容器是Spring的核心，Spring容器是管理bean对象的地方，其通过IoC技术管理。Spring容器也就是一个bean工厂（BeanFactory）。应用中bean的实例化，获取，销毁等都是由这个bean工厂管理的。更进一步讲，spring容器是管理service和dao的容器。
+
 Spring提供了两种容器类型：BeanFactory和ApplicationContext
 
 ## BeanFactory
@@ -24,3 +28,4 @@ ApplicationContext在BeanFactory的基础上构建，是相对比较高级的容
 ## 资料
 
 - [Java问题收集](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/index.md)
+- [原文地址](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/Spring%E5%AE%B9%E5%99%A8.md)
