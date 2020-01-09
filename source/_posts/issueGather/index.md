@@ -18,7 +18,7 @@ tags:
 - [spring boot 常用注解](https://github.com/smltq/blog/tree/master/source/_posts/issueGather/Spring%20Boot%20%E5%B8%B8%E7%94%A8%E6%B3%A8%E8%A7%A3.md)
 - [Dubbo支持的协议](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/Dubbo%E6%94%AF%E6%8C%81%E7%9A%84%E5%8D%8F%E8%AE%AE.md)
 - [spring 容器介绍](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/Spring%E5%AE%B9%E5%99%A8.md)
-- spring boot上下文加载机制、bean生命周期、spring mvc上下文加载机制
+- [bean生命周期](https://github.com/smltq/spring-boot-demo/tree/master/bean)
 
 ## mysql
 
