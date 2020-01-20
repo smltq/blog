@@ -4,7 +4,7 @@ date: 2019-11-22 00:12:57
 categories: 
 - 其它
 tags:
-- MySql
+- mysql
 ---
 # Windows上部署MySql
 
