@@ -1,6 +1,6 @@
 ---
 title: 问题收集
-date: 2019-11-25 00:12:57
+date: 2020-08-01 00:12:57
 categories: 
 - Java
 tags:
@@ -19,6 +19,18 @@ tags:
 - [Dubbo支持的协议](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/Dubbo%E6%94%AF%E6%8C%81%E7%9A%84%E5%8D%8F%E8%AE%AE.md)
 - [spring 容器介绍](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/Spring%E5%AE%B9%E5%99%A8.md)
 - [bean生命周期](https://github.com/smltq/spring-boot-demo/tree/master/bean)
+- 分布式事务原理及实现方式
+- zk分布式事务实现原理
+- switch字符串比较实现原理
+- java装箱拆箱、Integer源码阅读
+- jvm数据区划分
+- 并发编程之线程如何共享数据
+
+## 算法
+
+- 10亿数字寻找重复数字
+- 10亿数字寻找前10大数字
+- 滴滴用户地图上显示附近司机该如何实现
 
 ## mysql
 
