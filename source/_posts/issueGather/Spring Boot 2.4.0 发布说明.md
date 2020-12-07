@@ -19,7 +19,11 @@ Spring Boot 2.4.0 正式版本不再添加 RELEASE 后缀声明，在这个版�
 
 ## 2.4.0主要新特性
 
-### 版本命名的更改，从2.4开始，版本名将去除RELEASE后缀，所以这次的版本不是2.4.0.RELEASE，而是2.4.0
+### 版本命名的更改
+
+从2.4.0开始，版本名将去除RELEASE后缀，所以这次的版本不是2.4.0.RELEASE，而是2.4.0
+
+2.4.0是第一个使用新版本方案的Spring Boot发行版本
 
 ### 全新的配置文件处理(properties/yaml)
 
@@ -151,7 +155,6 @@ Vintage Engine属于Junit5的一个模块，它的作用是：允许用JUnit 5�
 ## 资料
 
 - [Spring Boot、Cloud学习示例](https://github.com/smltq/spring-boot-demo)
-- [Java问题收集](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/index.md)
-- [原文地址](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/Spring%E5%AE%B9%E5%99%A8.md)
+- [原文地址](https://github.com/smltq/blog/blob/master/source/_posts/issueGather/Spring%20Boot%202.4.0%20%E5%8F%91%E5%B8%83%E8%AF%B4%E6%98%8E.md)
 - [参考资料](https://www.mdeditor.tw/pl/p5WO)
 - [官网发布说明](https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.4-Release-Notes)
