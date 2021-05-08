@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"tqlin.cn","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Spring Boot 2.4.0 正式版本不再添加 RELEASE 后缀声明，在这个版本中增加了大量的新特性和改进，切记，不要轻易升级 除了刚发布的Spring Boot 2.4.0，Spring Boot 2.3.x&#x2F;2.2.x仍旧是活跃的维护的版本。Spring Boot遵循的是Pivotal OSS支持策略，从发布日期起支持主要版本3年（注意：是主要版本）。下面是详情：  2.3.x：支持">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Boot 2.4.0 发布说明">
+<meta property="og:url" content="https://tqlin.cn/2020/12/07/issueGather/Spring%20Boot%202.4.0%20%E5%8F%91%E5%B8%83%E8%AF%B4%E6%98%8E/index.html">
+<meta property="og:site_name" content="云天">
+<meta property="og:description" content="Spring Boot 2.4.0 正式版本不再添加 RELEASE 后缀声明，在这个版本中增加了大量的新特性和改进，切记，不要轻易升级 除了刚发布的Spring Boot 2.4.0，Spring Boot 2.3.x&#x2F;2.2.x仍旧是活跃的维护的版本。Spring Boot遵循的是Pivotal OSS支持策略，从发布日期起支持主要版本3年（注意：是主要版本）。下面是详情：  2.3.x：支持">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-12-07T15:46:24.000Z">
+<meta property="article:modified_time" content="2021-05-08T03:45:03.372Z">
+<meta property="article:author" content="yuntian">
+<meta property="article:tag" content="Spring Boot">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://tqlin.cn/2020/12/07/issueGather/Spring%20Boot%202.4.0%20%E5%8F%91%E5%B8%83%E8%AF%B4%E6%98%8E/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true
+  };
+</script>
+
+  <title>Spring Boot 2.4.0 发布说明 | 云天</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">云天</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">食无求饱,居无求安,敏于事而慎于言.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/smltq" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tqlin.cn/2020/12/07/issueGather/Spring%20Boot%202.4.0%20%E5%8F%91%E5%B8%83%E8%AF%B4%E6%98%8E/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="yuntian">
+      <meta itemprop="description" content="Software Engineer">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="云天">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring Boot 2.4.0 发布说明
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-07 23:46:24" itemprop="dateCreated datePublished" datetime="2020-12-07T23:46:24+08:00">2020-12-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-08 11:45:03" itemprop="dateModified" datetime="2021-05-08T11:45:03+08:00">2021-05-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Spring Boot 2.4.0 正式版本不再添加 RELEASE 后缀声明，在这个版本中增加了大量的新特性和改进，切记，不要轻易升级</p>
+<p>除了刚发布的Spring Boot 2.4.0，Spring Boot 2.3.x/2.2.x仍旧是活跃的维护的版本。Spring Boot遵循的是Pivotal OSS支持策略，从发布日期起支持主要版本3年（注意：是主要版本）。下面是详情：</p>
+<ul>
+<li>2.3.x：支持的版本。2020.05发布，是现在的活跃的主干</li>
+<li>2.2.x：支持的版本。2019.10发布，是现在的活跃的主干</li>
+<li>2.1.x：2018.10发布，支持到2020.10月底，建议尽快升级</li>
+<li>2.0.x：2018.3发布，2019.4.3停止维护 </li>
+<li>1.5.x：生命已终止的版本。2017.1发布，是最后一个1.x分支，2019.8.1停止维护</li>
+</ul>
+<h2 id="2-4-0主要新特性"><a href="#2-4-0主要新特性" class="headerlink" title="2.4.0主要新特性"></a>2.4.0主要新特性</h2><h3 id="版本命名的更改"><a href="#版本命名的更改" class="headerlink" title="版本命名的更改"></a>版本命名的更改</h3><p>从2.4.0开始，版本名将去除RELEASE后缀，所以这次的版本不是2.4.0.RELEASE，而是2.4.0</p>
+<p>2.4.0是第一个使用新版本方案的Spring Boot发行版本</p>
+<h3 id="全新的配置文件处理-properties-yaml"><a href="#全新的配置文件处理-properties-yaml" class="headerlink" title="全新的配置文件处理(properties/yaml)"></a>全新的配置文件处理(properties/yaml)</h3><p>这个改变最为重磅，本次改变了配置文件的加载逻辑，旨在简化和合理化外部配置的加载方式，它可能具有不向下兼容性。</p>
+<p>Spring Boot 2.4改变了处理application.properties和application.yml文件的方式：</p>
+<ul>
+<li>若你只是简单的文件application.properties/yaml，那么升级对你是无缝的，你感受不到任何变化</li>
+<li>若你使用了比较复杂的文件，如application-profile.properties/yaml这种（或者使用了Spirng Cloud的配置中心、（带有分隔符——的）多yaml文件），那么默认是不向下兼容的，需要你显式的做出些更改</li>
+</ul>
+<p>因为配置文件隶属于程序的一部分，特别是我们现在几乎都会使用到配置中心。因此下面针对于老版本升级到Spring Boot 2.4.0做个简单的迁移指导。</p>
+<p>Spring Boot 2.4对application.poperties/yaml的处理做了更新/升级。旨在简化和合理化外部配置的加载方式。它还提供了新功能：spring.config.import支持。所以呢，对于Spring Boot 2.4.0之前的版本（老版本）若升级到2.4.0需要做些修改，指导建议如下：</p>
+<p>增加此配置后，Spring Boot对配置文件的解析恢复到原来模式：仍旧使用ConfigFileApplicationListener去解析</p>
+<p>此API在2.4.0已被标记为过期，按照Spring Boot的版本策略，此类将在Spring Boot 2.6.0版本被移除。因此：若不是迫不得已（时间紧急），并不建议你用兼容手法这么去做，因为这将成为技术债，迟早要还的。</p>
+<h4 id="方式一：恢复旧模式（不推荐）"><a href="#方式一：恢复旧模式（不推荐）" class="headerlink" title="方式一：恢复旧模式（不推荐）"></a>方式一：恢复旧模式（不推荐）</h4><p>如果你还未准备好做配置迁移的修改，Spring Boot也帮你考虑到了，提供了一键切换到旧模式的“按钮”。具体做法是：只需要在Environment里增加一个属性spring.config.use-legacy-processing = true就搞定。最简的方式就是把这个属性放在application.poperties/yaml里即可。</p>
+<h4 id="方式二：按新规则迁移（推荐）"><a href="#方式二：按新规则迁移（推荐）" class="headerlink" title="方式二：按新规则迁移（推荐）"></a>方式二：按新规则迁移（推荐）</h4><p>若你对配置文件的使用有如下情行，那么你需要做迁移：</p>
+<ul>
+<li>多文档的yaml文件（带有——分隔符的文件）</li>
+<li>在Jar外使用配置文件，或者使用形如application-{xxx}.properties/yaml这种配置</li>
+<li>若在多文档yaml中使用到了spring.profiles配置项</li>
+<li>…</li>
+</ul>
+<p>Spring Boot 2.4.0升级对配置文件的改动是最大的，并且还不具备向下兼容性，简单的说就是从此版本开始要把Spring Boot的配置文件加载机制重学一遍（比如还增加了spring.config.import，增加了对kubernetes配置的支持等等），并且还要学会如何迁移。</p>
+<h3 id="新的-spring-config-import-属性可用于导入-Kubernetes-中常用的配置树"><a href="#新的-spring-config-import-属性可用于导入-Kubernetes-中常用的配置树" class="headerlink" title="新的 spring.config.import 属性可用于导入 Kubernetes 中常用的配置树"></a>新的 spring.config.import 属性可用于导入 Kubernetes 中常用的配置树</h3><h3 id="添加了一个新的启动端点，用来显示应用启动有关的详细信息，比如可以帮助我们来诊断启动时间比预期更长的-Spring-Beans"><a href="#添加了一个新的启动端点，用来显示应用启动有关的详细信息，比如可以帮助我们来诊断启动时间比预期更长的-Spring-Beans" class="headerlink" title="添加了一个新的启动端点，用来显示应用启动有关的详细信息，比如可以帮助我们来诊断启动时间比预期更长的 Spring Beans"></a>添加了一个新的启动端点，用来显示应用启动有关的详细信息，比如可以帮助我们来诊断启动时间比预期更长的 Spring Beans</h3><h3 id="Docker-支持升级"><a href="#Docker-支持升级" class="headerlink" title="Docker 支持升级"></a>Docker 支持升级</h3><h3 id="完美支持Java-15"><a href="#完美支持Java-15" class="headerlink" title="完美支持Java 15"></a>完美支持Java 15</h3><h3 id="核心依赖升级"><a href="#核心依赖升级" class="headerlink" title="核心依赖升级"></a>核心依赖升级</h3><ul>
+<li><p>Spring AMQP 2.3</p>
+</li>
+<li><p>Spring Batch 4.3</p>
+</li>
+<li><p>Spring Data 2020.0</p>
+</li>
+<li><p>Spring Framework 5.3</p>
+</li>
+<li><p>Spring Integration 5.4</p>
+</li>
+<li><p>Spring HATEOAS 1.2</p>
+</li>
+<li><p>Spring Kafka 2.6</p>
+</li>
+<li><p>Spring Retry 1.3</p>
+</li>
+<li><p>Spring Security 5.4</p>
+</li>
+<li><p>Spring Session 2020.0</p>
+</li>
+</ul>
+<h3 id="嵌入式数据库检测"><a href="#嵌入式数据库检测" class="headerlink" title="嵌入式数据库检测"></a>嵌入式数据库检测</h3><p>改进嵌入式数据库检测机制：仅当数据库在内存中时才将其视为嵌入式数据库。所以如果使用H2、HSQL等产品，但是你是基于文件的持久性或使用的是服务器模式，那么将不会检测为内存数据库。而对于非内存数据库，你可能需要额外做如下动作：</p>
+<ul>
+<li>sa用户名将不会再被主动设置。所以如果你的数据库需要用户名，请增加配置项：spring.datasource.username = sa</li>
+<li>这种数据库将不会再被自动初始化，若要使用请根据需要更改spring.datasource.initialization-mode的值</li>
+</ul>
+<h3 id="Logback配置属性的更改"><a href="#Logback配置属性的更改" class="headerlink" title="Logback配置属性的更改"></a>Logback配置属性的更改</h3><p>Logback一些配置项改名了,新增了配置类LogbackLoggingSystemProperties用于对应，它继承自之前的LoggingSystemProperties</p>
+<p>之前的配置项有些被废弃（此版本还未删除，后续版本肯定会删除的），对应关系如下</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>老(<del>~已废弃</del>~)</th>
+<th>新</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>logging.pattern.rolling-file-name</td>
+<td>logging.logback.rollingpolicy.file-name-pattern</td>
+</tr>
+<tr>
+<td>logging.file.clean-history-on-start</td>
+<td>logging.logback.rollingpolicy.clean-history-on-start</td>
+</tr>
+<tr>
+<td>logging.file.max-size</td>
+<td>logging.logback.rollingpolicy.max-file-size</td>
+</tr>
+<tr>
+<td>logging.file.total-size-cap</td>
+<td>logging.logback.rollingpolicy.total-size-cap</td>
+</tr>
+<tr>
+<td>logging.file.max-history</td>
+<td>logging.logback.rollingpolicy.max-history</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>一些属性是被放到system environment里面的：<br>|老(<del>~已废弃</del>~)|新|<br>|—-|—-|<br>|ROLLING_FILE_NAME_PATTERN | LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN|<br>|LOG_FILE_CLEAN_HISTORY_ON_START | LOGBACK_ROLLINGPOLICY_CLEAN_HISTORY_ON_START|<br>|LOG_FILE_MAX_SIZE | LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE|<br>|LOG_FILE_TOTAL_SIZE_CAP | LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP|<br>|LOG_FILE_MAX_HISTORY | LOGBACK_ROLLINGPOLICY_MAX_HISTORY|</p>
+<h3 id="不再注册DefaultServlet"><a href="#不再注册DefaultServlet" class="headerlink" title="不再注册DefaultServlet"></a>不再注册DefaultServlet</h3><p>从Spring Boot 2.4开始，默认将不会再注册DefaultServlet。因为在绝大多数的应用中，Spring MVC提供的DispatcherServlet是唯一需要被注册的Servlet。</p>
+<pre><code>若你的工程强依赖于此Servelt，那么可以通过此配置项server.servlet.register-default-servlet = true把它注册上去。
+</code></pre><h3 id="HTTP-traces不再包含cookie头"><a href="#HTTP-traces不再包含cookie头" class="headerlink" title="HTTP traces不再包含cookie头"></a>HTTP traces不再包含cookie头</h3><p>默认情况下，不在 HTTP traces中包含 Cookie 请求头和 set-Cookie 响应头。</p>
+<pre><code>若你仍旧想保留老的习惯，那么请用配置项management.trace.http.include = cookies, errors, request-headers, response-headers自行控制。
+</code></pre><h3 id="从spring-boot-starter-test中删除Vintage-Engine"><a href="#从spring-boot-starter-test中删除Vintage-Engine" class="headerlink" title="从spring-boot-starter-test中删除Vintage Engine"></a>从spring-boot-starter-test中删除Vintage Engine</h3><p>Spring Boot 2.2.0版本开始就引入JUnit 5作为单元测试默认库，在此之前，spring-boot-starter-test包含的是JUnit 4的依赖，Spring Boot 2.2.0版本之后替换成了Junit Jupiter（Junit5）。</p>
+<p>Vintage Engine属于Junit5的一个模块，它的作用是：允许用JUnit 5运行用JUnit 4编写的测试，从而提供了向下兼容的能力。</p>
+<p>从2.2.0到现在经过了2个版本的迭代，到Spring Boot 2.4.0这个版本决定了把Vintage Engine从spring-boot-starter-test正式移除。因此：若你的工程仍需要对JUnit4支持，那么请手动引入依赖项（如果工程量不大，强烈建议使用JUnit5，比4好用太多）</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.junit.vintage<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>junit-vintage-engine<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">exclusions</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">exclusion</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.hamcrest<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>hamcrest-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">exclusion</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">exclusions</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code>说明：其实在2.4.0之前，若你是从https://start.spring.io生成的项目其实也是不会带有vintage-engine的。只不过它是通过显式的在pom里通过exclusion标签来排除的
+</code></pre><h2 id="资料"><a href="#资料" class="headerlink" title="资料"></a>资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/smltq/spring-boot-demo">Spring Boot、Cloud学习示例</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/smltq/blog/blob/master/source/_posts/issueGather/Spring%20Boot%202.4.0%20%E5%8F%91%E5%B8%83%E8%AF%B4%E6%98%8E.md">原文地址</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.mdeditor.tw/pl/p5WO">参考资料</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.4-Release-Notes">官网发布说明</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Spring-Boot/" rel="tag"># Spring Boot</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/01/issueGather/index/" rel="prev" title="问题收集">
+      <i class="fa fa-chevron-left"></i> 问题收集
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-0%E4%B8%BB%E8%A6%81%E6%96%B0%E7%89%B9%E6%80%A7"><span class="nav-number">1.</span> <span class="nav-text">2.4.0主要新特性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%88%E6%9C%AC%E5%91%BD%E5%90%8D%E7%9A%84%E6%9B%B4%E6%94%B9"><span class="nav-number">1.1.</span> <span class="nav-text">版本命名的更改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A8%E6%96%B0%E7%9A%84%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%A4%84%E7%90%86-properties-yaml"><span class="nav-number">1.2.</span> <span class="nav-text">全新的配置文件处理(properties&#x2F;yaml)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%80%EF%BC%9A%E6%81%A2%E5%A4%8D%E6%97%A7%E6%A8%A1%E5%BC%8F%EF%BC%88%E4%B8%8D%E6%8E%A8%E8%8D%90%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">方式一：恢复旧模式（不推荐）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E5%BC%8F%E4%BA%8C%EF%BC%9A%E6%8C%89%E6%96%B0%E8%A7%84%E5%88%99%E8%BF%81%E7%A7%BB%EF%BC%88%E6%8E%A8%E8%8D%90%EF%BC%89"><span class="nav-number">1.2.2.</span> <span class="nav-text">方式二：按新规则迁移（推荐）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B0%E7%9A%84-spring-config-import-%E5%B1%9E%E6%80%A7%E5%8F%AF%E7%94%A8%E4%BA%8E%E5%AF%BC%E5%85%A5-Kubernetes-%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84%E9%85%8D%E7%BD%AE%E6%A0%91"><span class="nav-number">1.3.</span> <span class="nav-text">新的 spring.config.import 属性可用于导入 Kubernetes 中常用的配置树</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E4%BA%86%E4%B8%80%E4%B8%AA%E6%96%B0%E7%9A%84%E5%90%AF%E5%8A%A8%E7%AB%AF%E7%82%B9%EF%BC%8C%E7%94%A8%E6%9D%A5%E6%98%BE%E7%A4%BA%E5%BA%94%E7%94%A8%E5%90%AF%E5%8A%A8%E6%9C%89%E5%85%B3%E7%9A%84%E8%AF%A6%E7%BB%86%E4%BF%A1%E6%81%AF%EF%BC%8C%E6%AF%94%E5%A6%82%E5%8F%AF%E4%BB%A5%E5%B8%AE%E5%8A%A9%E6%88%91%E4%BB%AC%E6%9D%A5%E8%AF%8A%E6%96%AD%E5%90%AF%E5%8A%A8%E6%97%B6%E9%97%B4%E6%AF%94%E9%A2%84%E6%9C%9F%E6%9B%B4%E9%95%BF%E7%9A%84-Spring-Beans"><span class="nav-number">1.4.</span> <span class="nav-text">添加了一个新的启动端点，用来显示应用启动有关的详细信息，比如可以帮助我们来诊断启动时间比预期更长的 Spring Beans</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Docker-%E6%94%AF%E6%8C%81%E5%8D%87%E7%BA%A7"><span class="nav-number">1.5.</span> <span class="nav-text">Docker 支持升级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%8C%E7%BE%8E%E6%94%AF%E6%8C%81Java-15"><span class="nav-number">1.6.</span> <span class="nav-text">完美支持Java 15</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E4%BE%9D%E8%B5%96%E5%8D%87%E7%BA%A7"><span class="nav-number">1.7.</span> <span class="nav-text">核心依赖升级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B5%8C%E5%85%A5%E5%BC%8F%E6%95%B0%E6%8D%AE%E5%BA%93%E6%A3%80%E6%B5%8B"><span class="nav-number">1.8.</span> <span class="nav-text">嵌入式数据库检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Logback%E9%85%8D%E7%BD%AE%E5%B1%9E%E6%80%A7%E7%9A%84%E6%9B%B4%E6%94%B9"><span class="nav-number">1.9.</span> <span class="nav-text">Logback配置属性的更改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8D%E5%86%8D%E6%B3%A8%E5%86%8CDefaultServlet"><span class="nav-number">1.10.</span> <span class="nav-text">不再注册DefaultServlet</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-traces%E4%B8%8D%E5%86%8D%E5%8C%85%E5%90%ABcookie%E5%A4%B4"><span class="nav-number">1.11.</span> <span class="nav-text">HTTP traces不再包含cookie头</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8Espring-boot-starter-test%E4%B8%AD%E5%88%A0%E9%99%A4Vintage-Engine"><span class="nav-number">1.12.</span> <span class="nav-text">从spring-boot-starter-test中删除Vintage Engine</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B5%84%E6%96%99"><span class="nav-number">2.</span> <span class="nav-text">资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="yuntian"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">yuntian</p>
+  <div class="site-description" itemprop="description">Software Engineer</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/smltq" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;smltq" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/271657370@qq.com" title="E-Mail → 271657370@qq.com"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://juejin.im/user/58f7207da0bb9f006ab7383a" title="掘金 → https:&#x2F;&#x2F;juejin.im&#x2F;user&#x2F;58f7207da0bb9f006ab7383a" rel="noopener" target="_blank"><i class="fa fa-fw fa-gitlab"></i>掘金</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/tqlin/" title="博客园 → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;tqlin&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-user"></i>博客园</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      云天的开源项目
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/smltq/spring-boot-demo" title="https:&#x2F;&#x2F;github.com&#x2F;smltq&#x2F;spring-boot-demo" rel="noopener" target="_blank">Spring Boot、Cloud 示例</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/smltq/jPublic" title="https:&#x2F;&#x2F;github.com&#x2F;smltq&#x2F;jPublic" rel="noopener" target="_blank">JavaScript 工具库、函数库</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/smltq/spring-boot-demo/tree/master/leetcode" title="https:&#x2F;&#x2F;github.com&#x2F;smltq&#x2F;spring-boot-demo&#x2F;tree&#x2F;master&#x2F;leetcode" rel="noopener" target="_blank">LeetCode题解目录</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/smltq/blog/blob/master/source/_posts/issueGather/index.md" title="https:&#x2F;&#x2F;github.com&#x2F;smltq&#x2F;blog&#x2F;blob&#x2F;master&#x2F;source&#x2F;_posts&#x2F;issueGather&#x2F;index.md" rel="noopener" target="_blank">开发问题收集</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+  <div class="beian"><a href="http://beian.miit.gov.cn/" rel="noopener" target="_blank">闽ICP备19023108号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yuntian</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">166k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:31</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

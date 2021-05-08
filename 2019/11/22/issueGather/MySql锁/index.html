@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"tqlin.cn","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="mysql 排它锁之行锁、间隙锁、后码锁MySQL InnoDB支持三种行锁定  行锁（Record Lock）:锁直接加在索引记录上面，锁住的是key。  间隙锁（Gap Lock）:锁定索引记录间隙，确保索引记录的间隙不变。间隙锁是针对事务隔离级别为可重复读或以上级别而设计的。  后码锁（Next-Key Lock）：行锁和间隙锁组合起来就叫Next-Key Lock。   默认情况下，Inn">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySql 排它锁之行锁、间隙锁、后码锁">
+<meta property="og:url" content="https://tqlin.cn/2019/11/22/issueGather/MySql%E9%94%81/index.html">
+<meta property="og:site_name" content="云天">
+<meta property="og:description" content="mysql 排它锁之行锁、间隙锁、后码锁MySQL InnoDB支持三种行锁定  行锁（Record Lock）:锁直接加在索引记录上面，锁住的是key。  间隙锁（Gap Lock）:锁定索引记录间隙，确保索引记录的间隙不变。间隙锁是针对事务隔离级别为可重复读或以上级别而设计的。  后码锁（Next-Key Lock）：行锁和间隙锁组合起来就叫Next-Key Lock。   默认情况下，Inn">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://leaf.tqlin.cn/upload/2019/11/gap%20locks-07b45f89a22d43afb7652b57733e8750.jpg">
+<meta property="article:published_time" content="2019-11-21T16:12:57.000Z">
+<meta property="article:modified_time" content="2021-05-08T03:45:03.372Z">
+<meta property="article:author" content="yuntian">
+<meta property="article:tag" content="mysql">
+<meta property="article:tag" content="锁">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://leaf.tqlin.cn/upload/2019/11/gap%20locks-07b45f89a22d43afb7652b57733e8750.jpg">
+
+<link rel="canonical" href="https://tqlin.cn/2019/11/22/issueGather/MySql%E9%94%81/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true
+  };
+</script>
+
+  <title>MySql 排它锁之行锁、间隙锁、后码锁 | 云天</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">云天</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">食无求饱,居无求安,敏于事而慎于言.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/smltq" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tqlin.cn/2019/11/22/issueGather/MySql%E9%94%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="yuntian">
+      <meta itemprop="description" content="Software Engineer">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="云天">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySql 排它锁之行锁、间隙锁、后码锁
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-22 00:12:57" itemprop="dateCreated datePublished" datetime="2019-11-22T00:12:57+08:00">2019-11-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-08 11:45:03" itemprop="dateModified" datetime="2021-05-08T11:45:03+08:00">2021-05-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/db/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="mysql-排它锁之行锁、间隙锁、后码锁"><a href="#mysql-排它锁之行锁、间隙锁、后码锁" class="headerlink" title="mysql 排它锁之行锁、间隙锁、后码锁"></a>mysql 排它锁之行锁、间隙锁、后码锁</h1><p>MySQL InnoDB支持三种行锁定</p>
+<ul>
+<li><p>行锁（Record Lock）:锁直接加在索引记录上面，锁住的是key。</p>
+</li>
+<li><p>间隙锁（Gap Lock）:锁定索引记录间隙，确保索引记录的间隙不变。间隙锁是针对事务隔离级别为可重复读或以上级别而设计的。</p>
+</li>
+<li><p>后码锁（Next-Key Lock）：行锁和间隙锁组合起来就叫Next-Key Lock。</p>
+</li>
+</ul>
+<p>默认情况下，InnoDB工作在可重复读隔离级别下，并且会以Next-Key Lock的方式对数据行进行加锁，这样可以有效防止幻读的发生。Next-Key Lock是行锁和间隙锁的组合，当InnoDB扫描索引记录的时候，会首先对索引记录加上行锁（Record Lock），再对索引记录两边的间隙加上间隙锁（Gap Lock）。加上间隙锁之后，其他事务就不能在这个间隙修改或者插入记录。</p>
+<h2 id="行锁-Record-Lock"><a href="#行锁-Record-Lock" class="headerlink" title="行锁(Record Lock)"></a>行锁(Record Lock)</h2><ul>
+<li>当需要对表中的某条数据进行写操作（insert、update、delete、select for update）时，需要先获取记录的排他锁（X锁），这个就称为行锁。</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> x(`id` <span class="type">int</span>, `num` <span class="type">int</span>, index `idx_id` (`id`));</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> x <span class="keyword">values</span>(<span class="number">1</span>, <span class="number">1</span>), (<span class="number">2</span>, <span class="number">2</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 事务A</span></span><br><span class="line"><span class="keyword">START</span> TRANSACTION;</span><br><span class="line">update x <span class="keyword">set</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">where</span> id <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 事务B</span></span><br><span class="line"><span class="comment">-- 如果事务A没有commit，id=1的记录拿不到X锁，将出现等待</span></span><br><span class="line"><span class="keyword">START</span> TRANSACTION;</span><br><span class="line">update x <span class="keyword">set</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">where</span> id <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 事务C</span></span><br><span class="line"><span class="comment">-- id=2的记录可以拿到X锁，不会出现等待</span></span><br><span class="line"><span class="keyword">START</span> TRANSACTION;</span><br><span class="line">update x <span class="keyword">set</span> id <span class="operator">=</span> <span class="number">2</span> <span class="keyword">where</span> id <span class="operator">=</span> <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>针对InnoDB RR隔离级别，上述SQL示例展示了行锁的特点：“锁定特定行不允许进行修改”，但行锁是基于表索引的，如果where条件中用的是num字段（非索引列）将产生不一样的现象：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 事务A</span></span><br><span class="line"><span class="keyword">START</span> TRANSACTION;</span><br><span class="line">update x <span class="keyword">set</span> num <span class="operator">=</span> <span class="number">1</span> <span class="keyword">where</span> num <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 事务B</span></span><br><span class="line"><span class="comment">-- 由于事务A中num字段上没有索引将产生表锁，导致整张表的写操作都会出现等待</span></span><br><span class="line"><span class="keyword">START</span> TRANSACTION;</span><br><span class="line">update x <span class="keyword">set</span> num <span class="operator">=</span> <span class="number">1</span> <span class="keyword">where</span> num <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 事务C</span></span><br><span class="line"><span class="comment">-- 同理，会出现等待</span></span><br><span class="line"><span class="keyword">START</span> TRANSACTION;</span><br><span class="line">update x <span class="keyword">set</span> num <span class="operator">=</span> <span class="number">2</span> <span class="keyword">where</span> num <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 事务D</span></span><br><span class="line"><span class="comment">-- 等待</span></span><br><span class="line"><span class="keyword">START</span> TRANSACTION;</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> x <span class="keyword">values</span>(<span class="number">3</span>, <span class="number">3</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="Gap锁-Gap-Lock"><a href="#Gap锁-Gap-Lock" class="headerlink" title="Gap锁(Gap Lock)"></a>Gap锁(Gap Lock)</h2><p>在MySQL中select称为快照读，不需要锁，而insert、update、delete、select for update则称为当前读，需要给数据加锁，幻读中的“读”即是针对当前读。</p>
+<p>RR事务隔离级别允许存在幻读，但InnoDB RR级别却通过Gap锁避免了幻读</p>
+<h3 id="产生间隙锁的条件（RR事务隔离级别下）"><a href="#产生间隙锁的条件（RR事务隔离级别下）" class="headerlink" title="产生间隙锁的条件（RR事务隔离级别下）"></a>产生间隙锁的条件（RR事务隔离级别下）</h3><ul>
+<li>使用普通索引锁定</li>
+<li>使用多列唯一索引</li>
+<li>使用唯一索引锁定多行记录</li>
+</ul>
+<h3 id="唯一索引的间隙锁"><a href="#唯一索引的间隙锁" class="headerlink" title="唯一索引的间隙锁"></a>唯一索引的间隙锁</h3><p>测试环境</p>
+<pre><code>MySQL，InnoDB，默认的隔离级别（RR）
+</code></pre><p>数据表</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `test` (</span><br><span class="line">  `id` <span class="type">int</span>(<span class="number">1</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `name` <span class="type">varchar</span>(<span class="number">8</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8;</span><br></pre></td></tr></table></figure>
+<p>数据</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` <span class="keyword">VALUES</span> (<span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;小罗&#x27;</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` <span class="keyword">VALUES</span> (<span class="string">&#x27;5&#x27;</span>, <span class="string">&#x27;小黄&#x27;</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` <span class="keyword">VALUES</span> (<span class="string">&#x27;7&#x27;</span>, <span class="string">&#x27;小明&#x27;</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` <span class="keyword">VALUES</span> (<span class="string">&#x27;11&#x27;</span>, <span class="string">&#x27;小红&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>以上数据，会生成隐藏间隙</p>
+<p>(-infinity, 1]<br>(1, 5]<br>(5, 7]<br>(7, 11]<br>(11, +infinity]</p>
+<h4 id="只使用记录锁，不会产生间隙锁"><a href="#只使用记录锁，不会产生间隙锁" class="headerlink" title="只使用记录锁，不会产生间隙锁"></a>只使用记录锁，不会产生间隙锁</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 开启事务1 */</span></span><br><span class="line"><span class="keyword">BEGIN</span>;</span><br><span class="line"><span class="comment">/* 查询 id = 5 的数据并加记录锁 */</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `test` <span class="keyword">WHERE</span> `id` <span class="operator">=</span> <span class="number">5</span> <span class="keyword">FOR</span> UPDATE;</span><br><span class="line"><span class="comment">/* 延迟30秒执行，防止锁释放 */</span></span><br><span class="line"><span class="keyword">SELECT</span> SLEEP(<span class="number">30</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 注意：以下的语句不是放在一个事务中执行，而是分开多次执行，每次事务中只有一条添加语句</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务2插入一条 name = &#x27;小张&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">4</span>, <span class="string">&#x27;小张&#x27;</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务3插入一条 name = &#x27;小张&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">8</span>, <span class="string">&#x27;小东&#x27;</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 提交事务1，释放事务1的锁 */</span></span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br></pre></td></tr></table></figure>
+<p>以上，由于主键是唯一索引，而且是只使用一个索引查询，并且只锁定一条记录，所以，只会对 id = 5 的数据加上记录锁，而不会产生间隙锁。</p>
+<h4 id="产生间隙锁"><a href="#产生间隙锁" class="headerlink" title="产生间隙锁"></a>产生间隙锁</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 开启事务1 */</span></span><br><span class="line"><span class="keyword">BEGIN</span>;</span><br><span class="line"><span class="comment">/* 查询 id 在 7 - 11 范围的数据并加记录锁 */</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `test` <span class="keyword">WHERE</span> `id` <span class="keyword">BETWEEN</span> <span class="number">5</span> <span class="keyword">AND</span> <span class="number">7</span> <span class="keyword">FOR</span> UPDATE;</span><br><span class="line"><span class="comment">/* 延迟30秒执行，防止锁释放 */</span></span><br><span class="line"><span class="keyword">SELECT</span> SLEEP(<span class="number">30</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 注意：以下的语句不是放在一个事务中执行，而是分开多次执行，每次事务中只有一条添加语句</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务2插入一条 id = 3，name = &#x27;小张1&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">3</span>, <span class="string">&#x27;小张1&#x27;</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务3插入一条 id = 4，name = &#x27;小白&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">4</span>, <span class="string">&#x27;小白&#x27;</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务4插入一条 id = 6，name = &#x27;小东&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">6</span>, <span class="string">&#x27;小东&#x27;</span>); <span class="comment">-- 阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务5插入一条 id = 8， name = &#x27;大罗&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">8</span>, <span class="string">&#x27;大罗&#x27;</span>); <span class="comment">-- 阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务6插入一条 id = 9， name = &#x27;大东&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">9</span>, <span class="string">&#x27;大东&#x27;</span>); <span class="comment">-- 阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务7插入一条 id = 11， name = &#x27;李西&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">11</span>, <span class="string">&#x27;李西&#x27;</span>); <span class="comment">-- 阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务8插入一条 id = 12， name = &#x27;张三&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">12</span>, <span class="string">&#x27;张三&#x27;</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 提交事务1，释放事务1的锁 */</span></span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br></pre></td></tr></table></figure>
+<p>从上面我们可以看到，(5, 7]、(7, 11] 这两个区间，都不可插入数据，其它区间，都可以正常插入数据。所以当我们给 (5, 7] 这个区间加锁的时候，会锁住 (5, 7]、(7, 11] 这两个区间。</p>
+<h4 id="锁住不存在的数据"><a href="#锁住不存在的数据" class="headerlink" title="锁住不存在的数据"></a>锁住不存在的数据</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 开启事务1 */</span></span><br><span class="line"><span class="keyword">BEGIN</span>;</span><br><span class="line"><span class="comment">/* 查询 id = 3 这一条不存在的数据并加记录锁 */</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `test` <span class="keyword">WHERE</span> `id` <span class="operator">=</span> <span class="number">3</span> <span class="keyword">FOR</span> UPDATE;</span><br><span class="line"><span class="comment">/* 延迟30秒执行，防止锁释放 */</span></span><br><span class="line"><span class="keyword">SELECT</span> SLEEP(<span class="number">30</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 注意：以下的语句不是放在一个事务中执行，而是分开多次执行，每次事务中只有一条添加语句</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务2插入一条 id = 3，name = &#x27;小张1&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">2</span>, <span class="string">&#x27;小张1&#x27;</span>); <span class="comment">-- 阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务3插入一条 id = 4，name = &#x27;小白&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">4</span>, <span class="string">&#x27;小白&#x27;</span>); <span class="comment">-- 阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务4插入一条 id = 6，name = &#x27;小东&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">6</span>, <span class="string">&#x27;小东&#x27;</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务5插入一条 id = 8， name = &#x27;大罗&#x27; 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test` (`id`, `name`) <span class="keyword">VALUES</span> (<span class="number">8</span>, <span class="string">&#x27;大罗&#x27;</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 提交事务1，释放事务1的锁 */</span></span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br></pre></td></tr></table></figure>
+<p>我们可以看出，指定查询某一条记录时，如果这条记录不存在，会产生间隙锁</p>
+<p>结论</p>
+<ul>
+<li>对于指定查询某一条记录的加锁语句，如果该记录不存在，会产生记录锁和间隙锁，如果记录存在，则只会产生记录锁，如：WHERE <code>id</code> = 5 FOR UPDATE;</li>
+<li>对于查找某一范围内的查询语句，会产生间隙锁，如：WHERE <code>id</code> BETWEEN 5 AND 7 FOR UPDATE;</li>
+</ul>
+<h3 id="普通索引的间隙锁"><a href="#普通索引的间隙锁" class="headerlink" title="普通索引的间隙锁"></a>普通索引的间隙锁</h3><p>数据准备</p>
+<p>创建 test1 表：</p>
+<ul>
+<li>注意：number 不是唯一值</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `test1` (</span><br><span class="line">  `id` <span class="type">int</span>(<span class="number">1</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `number` <span class="type">int</span>(<span class="number">1</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> COMMENT <span class="string">&#x27;数字&#x27;</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`),</span><br><span class="line">  KEY `number` (`number`) <span class="keyword">USING</span> BTREE</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB AUTO_INCREMENT<span class="operator">=</span><span class="number">1</span> <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8;</span><br></pre></td></tr></table></figure>
+<p>id 是主键，number上建立了一个普通索引。先加一些数据：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` <span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` <span class="keyword">VALUES</span> (<span class="number">5</span>, <span class="number">3</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` <span class="keyword">VALUES</span> (<span class="number">7</span>, <span class="number">8</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` <span class="keyword">VALUES</span> (<span class="number">11</span>, <span class="number">12</span>);</span><br></pre></td></tr></table></figure>
+<p>test1表中 number 索引存在的隐藏间隙：</p>
+<p>(-infinity, 1]<br>(1, 3]<br>(3, 8]<br>(8, 12]<br>(12, +infinity]</p>
+<h4 id="执行以下的事务（事务1最后提交）"><a href="#执行以下的事务（事务1最后提交）" class="headerlink" title="执行以下的事务（事务1最后提交）"></a>执行以下的事务（事务1最后提交）</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 开启事务1 */</span></span><br><span class="line"><span class="keyword">BEGIN</span>;</span><br><span class="line"><span class="comment">/* 查询 number = 5 的数据并加记录锁 */</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `test1` <span class="keyword">WHERE</span> `number` <span class="operator">=</span> <span class="number">3</span> <span class="keyword">FOR</span> UPDATE;</span><br><span class="line"><span class="comment">/* 延迟30秒执行，防止锁释放 */</span></span><br><span class="line"><span class="keyword">SELECT</span> SLEEP(<span class="number">30</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 注意：以下的语句不是放在一个事务中执行，而是分开多次执行，每次事务中只有一条添加语句</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务2插入一条 number = 0 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`number`) <span class="keyword">VALUES</span> (<span class="number">0</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务3插入一条 number = 1 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`number`) <span class="keyword">VALUES</span> (<span class="number">1</span>); <span class="comment">-- 被阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务4插入一条 number = 2 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`number`) <span class="keyword">VALUES</span> (<span class="number">2</span>); <span class="comment">-- 被阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务5插入一条 number = 4 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`number`) <span class="keyword">VALUES</span> (<span class="number">4</span>); <span class="comment">-- 被阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务6插入一条 number = 8 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`number`) <span class="keyword">VALUES</span> (<span class="number">8</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务7插入一条 number = 9 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`number`) <span class="keyword">VALUES</span> (<span class="number">9</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务8插入一条 number = 10 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`number`) <span class="keyword">VALUES</span> (<span class="number">10</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 提交事务1 */</span></span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br></pre></td></tr></table></figure>
+<p>这里可以看到，number (1 - 8) 的间隙中，插入语句都被阻塞了，而不在这个范围内的语句，正常执行，这就是因为有间隙锁的原因。</p>
+<h4 id="加深对间隙锁的理解"><a href="#加深对间隙锁的理解" class="headerlink" title="加深对间隙锁的理解"></a>加深对间隙锁的理解</h4><p>将数据还原成初始化的那样</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 开启事务1 */</span></span><br><span class="line"><span class="keyword">BEGIN</span>;</span><br><span class="line"><span class="comment">/* 查询 number = 5 的数据并加记录锁 */</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `test1` <span class="keyword">WHERE</span> `number` <span class="operator">=</span> <span class="number">3</span> <span class="keyword">FOR</span> UPDATE;</span><br><span class="line"><span class="comment">/* 延迟30秒执行，防止锁释放 */</span></span><br><span class="line"><span class="keyword">SELECT</span> SLEEP(<span class="number">30</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务1插入一条 id = 2， number = 1 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`id`, `number`) <span class="keyword">VALUES</span> (<span class="number">2</span>, <span class="number">1</span>); <span class="comment">-- 阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务2插入一条 id = 3， number = 2 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`id`, `number`) <span class="keyword">VALUES</span> (<span class="number">3</span>, <span class="number">2</span>); <span class="comment">-- 阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务3插入一条 id = 6， number = 8 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`id`, `number`) <span class="keyword">VALUES</span> (<span class="number">6</span>, <span class="number">8</span>); <span class="comment">-- 阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务4插入一条 id = 8， number = 8 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`id`, `number`) <span class="keyword">VALUES</span> (<span class="number">8</span>, <span class="number">8</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务5插入一条 id = 9， number = 9 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`id`, `number`) <span class="keyword">VALUES</span> (<span class="number">9</span>, <span class="number">9</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务6插入一条 id = 10， number = 12 的数据 */</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`id`, `number`) <span class="keyword">VALUES</span> (<span class="number">10</span>, <span class="number">12</span>); <span class="comment">-- 正常执行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事务7修改 id = 11， number = 12 的数据 */</span></span><br><span class="line">UPDATE `test1` <span class="keyword">SET</span> `number` <span class="operator">=</span> <span class="number">5</span> <span class="keyword">WHERE</span> `id` <span class="operator">=</span> <span class="number">11</span> <span class="keyword">AND</span> `number` <span class="operator">=</span> <span class="number">12</span>; <span class="comment">-- 阻塞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 提交事务1 */</span></span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br></pre></td></tr></table></figure>
+<p>这里有一个奇怪的现象：</p>
+<p>事务3添加 id = 6，number = 8 的数据，给阻塞了；<br>事务4添加 id = 8，number = 8 的数据，正常执行了。<br>事务7将 id = 11，number = 12 的数据修改为 id = 11， number = 5的操作，给阻塞了；</p>
+<p>这是为什么呢？我们来看看下边的图</p>
+<p><img src="https://leaf.tqlin.cn/upload/2019/11/gap%20locks-07b45f89a22d43afb7652b57733e8750.jpg" alt="gap locks"></p>
+<p>从图中可以看出，当 number 相同时，会根据主键 id 来排序，所以：</p>
+<p>事务3添加的 id = 6，number = 8，这条数据是在 （3, 8） 的区间里边，所以会被阻塞；<br>事务4添加的 id = 8，number = 8，这条数据则是在（8, 12）区间里边，所以不会被阻塞；<br>事务7的修改语句相当于在 （3, 8） 的区间里边插入一条数据，所以也被阻塞了。</p>
+<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><ul>
+<li>在普通索引列上，不管是何种查询，只要加锁，都会产生间隙锁，这跟唯一索引不一样</li>
+<li>在普通索引跟唯一索引中，数据间隙的分析，数据行是优先根据普通索引排序，再根据唯一索引排序</li>
+</ul>
+<h3 id="后码锁-Next-key-Locks"><a href="#后码锁-Next-key-Locks" class="headerlink" title="后码锁(Next-key Locks)"></a>后码锁(Next-key Locks)</h3><p>后码锁是记录锁与间隙锁的组合，它的封锁范围，既包含索引记录，又包含索引区间。</p>
+<p>注：Next-key Lock的主要目的，也是为了避免幻读(Phantom Read)。如果把事务的隔离级别降级为RC，Next-key Lock则也会失效。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>记录锁、间隙锁、后码锁，都属于排它锁；</li>
+<li>记录锁就是锁住一行记录；</li>
+<li>间隙锁只有在事务隔离级别 RR 中才会产生；</li>
+<li>唯一索引只有锁住多条记录或者一条不存在的记录的时候，才会产生间隙锁，指定给某条存在的记录加锁的时候，只会加记录锁，不会产生间隙锁；</li>
+<li>普通索引不管是锁住单条，还是多条记录，都会产生间隙锁；</li>
+<li>间隙锁会封锁该条记录相邻两个键之间的空白区域，防止其它事务在这个区域内插入、修改、删除数据，这是为了防止出现 幻读 现象；</li>
+<li>普通索引的间隙，优先以普通索引排序，然后再根据主键索引排序；</li>
+<li>事务级别是RC（读已提交）级别的话，间隙锁将会失效。</li>
+</ul>
+<h2 id="资料"><a href="#资料" class="headerlink" title="资料"></a>资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/smltq/blog/blob/master/source/_posts/issueGather/index.md">Java问题收集</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/48269420">本文参考地址</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mysql/" rel="tag"># mysql</a>
+              <a href="/tags/%E9%94%81/" rel="tag"># 锁</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/11/22/issueGather/Nginx/" rel="prev" title="Nginx命令">
+      <i class="fa fa-chevron-left"></i> Nginx命令
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/11/22/issueGather/MySqlTransaction/" rel="next" title="MySql事务">
+      MySql事务 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql-%E6%8E%92%E5%AE%83%E9%94%81%E4%B9%8B%E8%A1%8C%E9%94%81%E3%80%81%E9%97%B4%E9%9A%99%E9%94%81%E3%80%81%E5%90%8E%E7%A0%81%E9%94%81"><span class="nav-number">1.</span> <span class="nav-text">mysql 排它锁之行锁、间隙锁、后码锁</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A1%8C%E9%94%81-Record-Lock"><span class="nav-number">1.1.</span> <span class="nav-text">行锁(Record Lock)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Gap%E9%94%81-Gap-Lock"><span class="nav-number">1.2.</span> <span class="nav-text">Gap锁(Gap Lock)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%A7%E7%94%9F%E9%97%B4%E9%9A%99%E9%94%81%E7%9A%84%E6%9D%A1%E4%BB%B6%EF%BC%88RR%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E4%B8%8B%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">产生间隙锁的条件（RR事务隔离级别下）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%94%AF%E4%B8%80%E7%B4%A2%E5%BC%95%E7%9A%84%E9%97%B4%E9%9A%99%E9%94%81"><span class="nav-number">1.2.2.</span> <span class="nav-text">唯一索引的间隙锁</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%AA%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95%E9%94%81%EF%BC%8C%E4%B8%8D%E4%BC%9A%E4%BA%A7%E7%94%9F%E9%97%B4%E9%9A%99%E9%94%81"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">只使用记录锁，不会产生间隙锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%A7%E7%94%9F%E9%97%B4%E9%9A%99%E9%94%81"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">产生间隙锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%94%81%E4%BD%8F%E4%B8%8D%E5%AD%98%E5%9C%A8%E7%9A%84%E6%95%B0%E6%8D%AE"><span class="nav-number">1.2.2.3.</span> <span class="nav-text">锁住不存在的数据</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%99%AE%E9%80%9A%E7%B4%A2%E5%BC%95%E7%9A%84%E9%97%B4%E9%9A%99%E9%94%81"><span class="nav-number">1.2.3.</span> <span class="nav-text">普通索引的间隙锁</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E4%BB%A5%E4%B8%8B%E7%9A%84%E4%BA%8B%E5%8A%A1%EF%BC%88%E4%BA%8B%E5%8A%A11%E6%9C%80%E5%90%8E%E6%8F%90%E4%BA%A4%EF%BC%89"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">执行以下的事务（事务1最后提交）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%A0%E6%B7%B1%E5%AF%B9%E9%97%B4%E9%9A%99%E9%94%81%E7%9A%84%E7%90%86%E8%A7%A3"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">加深对间隙锁的理解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">1.2.3.3.</span> <span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E7%A0%81%E9%94%81-Next-key-Locks"><span class="nav-number">1.2.4.</span> <span class="nav-text">后码锁(Next-key Locks)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.3.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B5%84%E6%96%99"><span class="nav-number">1.4.</span> <span class="nav-text">资料</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="yuntian"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">yuntian</p>
+  <div class="site-description" itemprop="description">Software Engineer</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/smltq" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;smltq" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/271657370@qq.com" title="E-Mail → 271657370@qq.com"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://juejin.im/user/58f7207da0bb9f006ab7383a" title="掘金 → https:&#x2F;&#x2F;juejin.im&#x2F;user&#x2F;58f7207da0bb9f006ab7383a" rel="noopener" target="_blank"><i class="fa fa-fw fa-gitlab"></i>掘金</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/tqlin/" title="博客园 → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;tqlin&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-user"></i>博客园</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      云天的开源项目
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/smltq/spring-boot-demo" title="https:&#x2F;&#x2F;github.com&#x2F;smltq&#x2F;spring-boot-demo" rel="noopener" target="_blank">Spring Boot、Cloud 示例</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/smltq/jPublic" title="https:&#x2F;&#x2F;github.com&#x2F;smltq&#x2F;jPublic" rel="noopener" target="_blank">JavaScript 工具库、函数库</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/smltq/spring-boot-demo/tree/master/leetcode" title="https:&#x2F;&#x2F;github.com&#x2F;smltq&#x2F;spring-boot-demo&#x2F;tree&#x2F;master&#x2F;leetcode" rel="noopener" target="_blank">LeetCode题解目录</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/smltq/blog/blob/master/source/_posts/issueGather/index.md" title="https:&#x2F;&#x2F;github.com&#x2F;smltq&#x2F;blog&#x2F;blob&#x2F;master&#x2F;source&#x2F;_posts&#x2F;issueGather&#x2F;index.md" rel="noopener" target="_blank">开发问题收集</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+  <div class="beian"><a href="http://beian.miit.gov.cn/" rel="noopener" target="_blank">闽ICP备19023108号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yuntian</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">166k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:31</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

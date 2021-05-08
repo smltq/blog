@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"tqlin.cn","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="MySql 表索引设计原则索引的优点 1.加快数据的检索速度，这是创建索引的最主要的原因;  2.通过创建唯一性索引，可以保证数据库表中每一行数据的唯一性;  3.加速表和表之间的连接;  4.在使用分组和排序子句进行数据检索时，可以显著减少查询中分组和排序的时间。   索引的缺点 1.创建索引和维护索引要耗费时间，这种时间随着数据量的增加而增加。  2.索引需要占物理空间，除了数据表占数据空间之">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySql 表索引设计原则">
+<meta property="og:url" content="https://tqlin.cn/2019/11/29/issueGather/%E8%A1%A8%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99/index.html">
+<meta property="og:site_name" content="云天">
+<meta property="og:description" content="MySql 表索引设计原则索引的优点 1.加快数据的检索速度，这是创建索引的最主要的原因;  2.通过创建唯一性索引，可以保证数据库表中每一行数据的唯一性;  3.加速表和表之间的连接;  4.在使用分组和排序子句进行数据检索时，可以显著减少查询中分组和排序的时间。   索引的缺点 1.创建索引和维护索引要耗费时间，这种时间随着数据量的增加而增加。  2.索引需要占物理空间，除了数据表占数据空间之">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-11-29T09:46:24.000Z">
+<meta property="article:modified_time" content="2021-05-08T03:45:03.372Z">
+<meta property="article:author" content="yuntian">
+<meta property="article:tag" content="设计">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://tqlin.cn/2019/11/29/issueGather/%E8%A1%A8%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true
+  };
+</script>
+
+  <title>MySql 表索引设计原则 | 云天</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">云天</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">食无求饱,居无求安,敏于事而慎于言.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/smltq" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tqlin.cn/2019/11/29/issueGather/%E8%A1%A8%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="yuntian">
+      <meta itemprop="description" content="Software Engineer">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="云天">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySql 表索引设计原则
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-29 17:46:24" itemprop="dateCreated datePublished" datetime="2019-11-29T17:46:24+08:00">2019-11-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-08 11:45:03" itemprop="dateModified" datetime="2021-05-08T11:45:03+08:00">2021-05-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/db/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="MySql-表索引设计原则"><a href="#MySql-表索引设计原则" class="headerlink" title="MySql 表索引设计原则"></a>MySql 表索引设计原则</h1><h2 id="索引的优点"><a href="#索引的优点" class="headerlink" title="索引的优点"></a>索引的优点</h2><ul>
+<li><p>1.加快数据的检索速度，这是创建索引的最主要的原因;</p>
+</li>
+<li><p>2.通过创建唯一性索引，可以保证数据库表中每一行数据的唯一性;</p>
+</li>
+<li><p>3.加速表和表之间的连接;</p>
+</li>
+<li><p>4.在使用分组和排序子句进行数据检索时，可以显著减少查询中分组和排序的时间。</p>
+</li>
+</ul>
+<h2 id="索引的缺点"><a href="#索引的缺点" class="headerlink" title="索引的缺点"></a>索引的缺点</h2><ul>
+<li><p>1.创建索引和维护索引要耗费时间，这种时间随着数据量的增加而增加。</p>
+</li>
+<li><p>2.索引需要占物理空间，除了数据表占数据空间之外，每一个索引还要占一定的物理空间，如果要建立聚簇索引，那么需要的空间就会更大。</p>
+</li>
+<li><p>3.当对表中的数据进行增加、删除和修改的时候，索引也要同步动态的维护，这样就降低了数据的增删改速度。</p>
+</li>
+</ul>
+<p>所以单表数据太少，索引反而会影响速度；更新非常频繁的数据不适宜建索引</p>
+<h2 id="索引设计原则"><a href="#索引设计原则" class="headerlink" title="索引设计原则"></a>索引设计原则</h2><p>根据数据库的功能，可以在数据库设计器中创建三种索引</p>
+<ul>
+<li>唯一索引：唯一索引是不允许其中任何两行具有相同索引值的索引</li>
+<li>主键索引：表定义主键将自动创建主键索引，主键索引是唯一索引的特定类型。该索引要求主键中的每个值都唯一。当在查询中使用主键索引时， 它允许对数据的快速访问</li>
+<li>聚集索引：表中行的物理顺序与键值的逻辑（索引）顺序相同。一个表 只能包含一个聚集索引</li>
+</ul>
+<blockquote>
+<p>选择索引的最终目的是为了使查询的速度变快。下面给出的原则是最基本的准则，但不能拘泥于这些准则，应该根据应用的实际情况进行分析和判断，选择最合适的索引方式。</p>
+</blockquote>
+<h3 id="1-索引最左匹配原则"><a href="#1-索引最左匹配原则" class="headerlink" title="1.索引最左匹配原则"></a>1.索引最左匹配原则</h3><ul>
+<li>索引可以简单如一个列(a)，也可以复杂如多个列(a, b, c, d)，即联合索引。</li>
+<li>如果是联合索引，那么key也由多个列组成，同时，索引只能用于查找key是否存在（相等），遇到范围查询(&gt;、&lt;、between、like左匹配)等就不能进一步匹配了，后续退化为线性查找。因此，列的排列顺序决定了可命中索引的列数。</li>
+</ul>
+<p>例子：</p>
+<p>如有索引(a, b, c, d)，查询条件a = 1 and b = 2 and c &gt; 3 and d = 4，则会在每个节点依次命中a、b、c，无法命中d。(很简单：索引命中只能是相等的情况，不能是范围匹配)</p>
+<blockquote>
+<p>明白最左匹配原则，对我们设计索引和编写高效SQL语句非常有帮助</p>
+</blockquote>
+<h3 id="2-为经常需要排序、分组操作的字段建立索引"><a href="#2-为经常需要排序、分组操作的字段建立索引" class="headerlink" title="2.为经常需要排序、分组操作的字段建立索引"></a>2.为经常需要排序、分组操作的字段建立索引</h3><p>经常需要ORDER BY、GROUP BY、DISTINCT等操作的字段，排序操作会浪费很多时间。如果为其建立索引，可以有效地避免排序操作。</p>
+<blockquote>
+<p>分组字段或者排序字段应该创建索引</p>
+</blockquote>
+<h3 id="3-为常作为查询条件的字段建立索引"><a href="#3-为常作为查询条件的字段建立索引" class="headerlink" title="3.为常作为查询条件的字段建立索引"></a>3.为常作为查询条件的字段建立索引</h3><p>如果某个字段经常用来做查询条件，那么该字段的查询速度会影响整个表的查询速度。因此，为这样的字段建立索引，可以提高整个表的查询速度。</p>
+<blockquote>
+<p>Where 子句中经常使用的字段应该创建索引</p>
+</blockquote>
+<h3 id="4-限制索引的数目"><a href="#4-限制索引的数目" class="headerlink" title="4.限制索引的数目"></a>4.限制索引的数目</h3><p>索引的数目不是越多越好。每个索引都需要占用磁盘空间，索引越多，需要的磁盘空间就越大。修改表时，对索引的重构和更新很麻烦。越多的索引，会使更新表变得很浪费时间。</p>
+<h3 id="5-尽量选择区分度高的列作为索引"><a href="#5-尽量选择区分度高的列作为索引" class="headerlink" title="5.尽量选择区分度高的列作为索引"></a>5.尽量选择区分度高的列作为索引</h3><p>尽量选择区分度高的列作为索引,区分度的公式是count(distinct col)/count(*)，表示字段不重复的比例，比例越大我们扫描的记录数越少，唯一键的区分度是1，而一些状态、性别字段可能在大数据面前区分度就是0，那可能有人会问，这个比例有什么经验值吗？使用场景不同，这个值也很难确定，一般需要join的字段我们都要求是0.1以上，即平均1条扫描10条记录</p>
+<h3 id="6-索引列不能参与计算"><a href="#6-索引列不能参与计算" class="headerlink" title="6.索引列不能参与计算"></a>6.索引列不能参与计算</h3><p>索引列不能参与计算，保持列“干净”，比如from_unixtime(create_time) = ’2019-12-02’就不能使用到索引，原因很简单，b+树中存的都是数据表中的字段值，但进行检索时，需要把所有元素都应用函数才能比较，显然成本太大。所以语句应该写成create_time = unix_timestamp(’2014-05-29’);</p>
+<blockquote>
+<p>即索引列不能带函数，否则会导致索引失效</p>
+</blockquote>
+<h3 id="7-扩展索引"><a href="#7-扩展索引" class="headerlink" title="7.扩展索引"></a>7.扩展索引</h3><p>尽量的扩展索引，不要新建索引。比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可</p>
+<h3 id="8-条件带like-注意事项"><a href="#8-条件带like-注意事项" class="headerlink" title="8.条件带like 注意事项"></a>8.条件带like 注意事项</h3><p>like 模糊查询中，右模糊查询(abc%)会使用索引，而(%abc)和(%abc%)会放弃索引而使用全表扫描</p>
+<h3 id="9-尽量使用数据量少的索引"><a href="#9-尽量使用数据量少的索引" class="headerlink" title="9.尽量使用数据量少的索引"></a>9.尽量使用数据量少的索引</h3><p>如果索引的值很长，那么查询的速度会受到影响。例如，对一个CHAR(100)类型的字段进行全文检索需要的时间要比对CHAR(10)类型的字段需要的时间要多。</p>
+<h3 id="10-尽量使用前缀来索引"><a href="#10-尽量使用前缀来索引" class="headerlink" title="10.尽量使用前缀来索引"></a>10.尽量使用前缀来索引</h3><p>如果索引字段的值很长，最好使用值的前缀来索引。例如，TEXT和BLOG类型的字段，进行全文检索会很浪费时间。如果只检索字段的前面的若干个字符，这样可以提高检索速度。</p>
+<h3 id="11-删除不再使用或者很少使用的索引"><a href="#11-删除不再使用或者很少使用的索引" class="headerlink" title="11.删除不再使用或者很少使用的索引"></a>11.删除不再使用或者很少使用的索引</h3><p>表中的数据被大量更新，或者数据的使用方式被改变后，原有的一些索引可能不再需要。数据库管理员应当定期找出这些索引，将它们删除，从而减少索引对更新操作的影响。</p>
+<h3 id="12-和in可以乱序。"><a href="#12-和in可以乱序。" class="headerlink" title="12.=和in可以乱序。"></a>12.=和in可以乱序。</h3><p>比如a = 1 and b = 2 and c = 3 建立(a,b,c)索引可以任意顺序，mysql的查询优化器会帮你优化成索引可以识别的形式</p>
+<h3 id="13-联合查询"><a href="#13-联合查询" class="headerlink" title="13.联合查询"></a>13.联合查询</h3><p>联合查询，子查询等多表操作时关联字段要加索引</p>
+<h2 id="资料"><a href="#资料" class="headerlink" title="资料"></a>资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/smltq/blog/blob/master/source/_posts/issueGather/index.md">Java问题收集</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/smltq/blog/blob/master/source/_posts/issueGather/%E8%A1%A8%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99.md">原文地址</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E8%AE%BE%E8%AE%A1/" rel="tag"># 设计</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/11/27/Spring%20Cloud%20Alibaba/README4/" rel="prev" title="Spring Cloud Alibaba（四）实现Dubbo服务消费">
+      <i class="fa fa-chevron-left"></i> Spring Cloud Alibaba（四）实现Dubbo服务消费
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/12/04/Spring%20Cloud%20Alibaba/README5/" rel="next" title="Spring Cloud Alibaba（五）RocketMQ 异步通信实现">
+      Spring Cloud Alibaba（五）RocketMQ 异步通信实现 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#MySql-%E8%A1%A8%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="nav-number">1.</span> <span class="nav-text">MySql 表索引设计原则</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BC%98%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">索引的优点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E7%BC%BA%E7%82%B9"><span class="nav-number">1.2.</span> <span class="nav-text">索引的缺点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="nav-number">1.3.</span> <span class="nav-text">索引设计原则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E7%B4%A2%E5%BC%95%E6%9C%80%E5%B7%A6%E5%8C%B9%E9%85%8D%E5%8E%9F%E5%88%99"><span class="nav-number">1.3.1.</span> <span class="nav-text">1.索引最左匹配原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E4%B8%BA%E7%BB%8F%E5%B8%B8%E9%9C%80%E8%A6%81%E6%8E%92%E5%BA%8F%E3%80%81%E5%88%86%E7%BB%84%E6%93%8D%E4%BD%9C%E7%9A%84%E5%AD%97%E6%AE%B5%E5%BB%BA%E7%AB%8B%E7%B4%A2%E5%BC%95"><span class="nav-number">1.3.2.</span> <span class="nav-text">2.为经常需要排序、分组操作的字段建立索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E4%B8%BA%E5%B8%B8%E4%BD%9C%E4%B8%BA%E6%9F%A5%E8%AF%A2%E6%9D%A1%E4%BB%B6%E7%9A%84%E5%AD%97%E6%AE%B5%E5%BB%BA%E7%AB%8B%E7%B4%A2%E5%BC%95"><span class="nav-number">1.3.3.</span> <span class="nav-text">3.为常作为查询条件的字段建立索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E9%99%90%E5%88%B6%E7%B4%A2%E5%BC%95%E7%9A%84%E6%95%B0%E7%9B%AE"><span class="nav-number">1.3.4.</span> <span class="nav-text">4.限制索引的数目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E5%B0%BD%E9%87%8F%E9%80%89%E6%8B%A9%E5%8C%BA%E5%88%86%E5%BA%A6%E9%AB%98%E7%9A%84%E5%88%97%E4%BD%9C%E4%B8%BA%E7%B4%A2%E5%BC%95"><span class="nav-number">1.3.5.</span> <span class="nav-text">5.尽量选择区分度高的列作为索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-%E7%B4%A2%E5%BC%95%E5%88%97%E4%B8%8D%E8%83%BD%E5%8F%82%E4%B8%8E%E8%AE%A1%E7%AE%97"><span class="nav-number">1.3.6.</span> <span class="nav-text">6.索引列不能参与计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E6%89%A9%E5%B1%95%E7%B4%A2%E5%BC%95"><span class="nav-number">1.3.7.</span> <span class="nav-text">7.扩展索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-%E6%9D%A1%E4%BB%B6%E5%B8%A6like-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">1.3.8.</span> <span class="nav-text">8.条件带like 注意事项</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-%E5%B0%BD%E9%87%8F%E4%BD%BF%E7%94%A8%E6%95%B0%E6%8D%AE%E9%87%8F%E5%B0%91%E7%9A%84%E7%B4%A2%E5%BC%95"><span class="nav-number">1.3.9.</span> <span class="nav-text">9.尽量使用数据量少的索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-%E5%B0%BD%E9%87%8F%E4%BD%BF%E7%94%A8%E5%89%8D%E7%BC%80%E6%9D%A5%E7%B4%A2%E5%BC%95"><span class="nav-number">1.3.10.</span> <span class="nav-text">10.尽量使用前缀来索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-%E5%88%A0%E9%99%A4%E4%B8%8D%E5%86%8D%E4%BD%BF%E7%94%A8%E6%88%96%E8%80%85%E5%BE%88%E5%B0%91%E4%BD%BF%E7%94%A8%E7%9A%84%E7%B4%A2%E5%BC%95"><span class="nav-number">1.3.11.</span> <span class="nav-text">11.删除不再使用或者很少使用的索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-%E5%92%8Cin%E5%8F%AF%E4%BB%A5%E4%B9%B1%E5%BA%8F%E3%80%82"><span class="nav-number">1.3.12.</span> <span class="nav-text">12.&#x3D;和in可以乱序。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#13-%E8%81%94%E5%90%88%E6%9F%A5%E8%AF%A2"><span class="nav-number">1.3.13.</span> <span class="nav-text">13.联合查询</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B5%84%E6%96%99"><span class="nav-number">1.4.</span> <span class="nav-text">资料</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="yuntian"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">yuntian</p>
+  <div class="site-description" itemprop="description">Software Engineer</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/smltq" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;smltq" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/271657370@qq.com" title="E-Mail → 271657370@qq.com"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://juejin.im/user/58f7207da0bb9f006ab7383a" title="掘金 → https:&#x2F;&#x2F;juejin.im&#x2F;user&#x2F;58f7207da0bb9f006ab7383a" rel="noopener" target="_blank"><i class="fa fa-fw fa-gitlab"></i>掘金</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/tqlin/" title="博客园 → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;tqlin&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-user"></i>博客园</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      云天的开源项目
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/smltq/spring-boot-demo" title="https:&#x2F;&#x2F;github.com&#x2F;smltq&#x2F;spring-boot-demo" rel="noopener" target="_blank">Spring Boot、Cloud 示例</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/smltq/jPublic" title="https:&#x2F;&#x2F;github.com&#x2F;smltq&#x2F;jPublic" rel="noopener" target="_blank">JavaScript 工具库、函数库</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/smltq/spring-boot-demo/tree/master/leetcode" title="https:&#x2F;&#x2F;github.com&#x2F;smltq&#x2F;spring-boot-demo&#x2F;tree&#x2F;master&#x2F;leetcode" rel="noopener" target="_blank">LeetCode题解目录</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/smltq/blog/blob/master/source/_posts/issueGather/index.md" title="https:&#x2F;&#x2F;github.com&#x2F;smltq&#x2F;blog&#x2F;blob&#x2F;master&#x2F;source&#x2F;_posts&#x2F;issueGather&#x2F;index.md" rel="noopener" target="_blank">开发问题收集</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+  <div class="beian"><a href="http://beian.miit.gov.cn/" rel="noopener" target="_blank">闽ICP备19023108号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yuntian</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">166k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:31</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
