@@ -42,7 +42,7 @@ nohup java -jar jGit-0.0.1.jar
 - 检查代码格式是否正确
 
 ```shell
-cat-v xx.sh
+cat -v xx.sh
 ```
 
 - 用vim打开文件，在命令行输入，查看文件是unix格式还是dos
